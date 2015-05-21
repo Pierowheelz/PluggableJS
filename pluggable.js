@@ -185,7 +185,7 @@ function pluggable(){
 		for (i in w){
 			tArr[n++] = i;
 		}
-		//tri du plus petit au plus grand
+		//sort from smallest to largest
 		tArr = tArr.sort();
 		n = tArr.length;
 		for (var i=0; i<n; i++) {
