@@ -14,6 +14,7 @@ function pluggable(){
 	self.filters = {};
 	self.merged_filters = {};
 	self.current_filter = [];
+	self.logging = false;
 	
 	/* Just like Wordpress */
 	/**
@@ -34,7 +35,7 @@ function pluggable(){
 		}
 		//console.log(typeof function_to_add);
 		if( typeof function_to_add == 'string' || typeof function_to_add == 'function' ){
-			console.log('ADDING FILTER `'+String(function_to_add).substring(0,30)+'` to hook `'+tag+'`');
+			if( self.logging ) console.log('ADDING FILTER `'+String(function_to_add).substring(0,40)+'` to hook `'+tag+'`');
 			var idx = self.build_unique_id(tag, function_to_add, priority);
 			if( typeof self.filters[tag] == 'undefined' )
 				self.filters[tag] = {};
@@ -44,7 +45,7 @@ function pluggable(){
 			delete self.merged_filters[ tag ];
 			return true;
 		} else {
-			console.warn('problem with filter on `'+tag+'`, function (parameter 2) must be passed as a string!');
+			if( self.logging ) console.warn('problem with filter on '+tag+', function (parameter 2) must be passed as a string!');
 			return false;
 		}
 	};
@@ -92,7 +93,7 @@ function pluggable(){
 			$.each( val, function( j, the_ ){
 				var temp_value = null;
 				if ( typeof the_['function'] != 'undefined' ){
-					console.log('CALLING FUNCTION `'+String(the_['function']).substring(0,30)+'` from hook `'+tag+'`');
+					if( self.logging ) console.log('CALLING FUNCTION `'+String(the_['function']).substring(0,40)+'` to hook `'+tag+'`');
 					if( typeof the_['function'] == 'function' ){
 						//console.log(the_['function']);
 						temp_value = the_['function']( value, args ); //execute function
@@ -102,11 +103,9 @@ function pluggable(){
 							if( /\./g.test(the_['function']) ){
 								var splits = the_['function'].split(".");
 								if( splits.length == 2 ){
-									console.log(splits);
-									console.log( " window[ "+splits[0]+" ][ "+splits[1]+" ] " );
 									temp_value = window[ splits[0] ][ splits[1] ]( value, args ); //execute function
 								} else {
-									console.warn('WARNING: filter function: '+ the_['function'] +'can only be at most 2 levels! ( eg: user.login NOT user.actions.login )');
+									if( self.logging ) console.warn('WARNING: filter function `'+ the_['function'] +'` can only be at most 2 levels! ( eg: user.login NOT user.actions.login )');
 								}
 							} else {
 								if( typeof window[ the_['function'] ] === "function" ){
@@ -114,7 +113,7 @@ function pluggable(){
 									temp_value = window[ the_['function'] ]( value, args ); //execute function
 									//value = call_user_func_array(the_['function'], array_slice(args, 1, (int) the_['accepted_args']));
 								} else {
-									console.warn('WARNING: filter function: '+ the_['function'] +'does not exist!');
+									if( self.logging ) console.warn('WARNING: filter function `'+ the_['function'] +'` does not exist!');
 								}
 							}
 						}
