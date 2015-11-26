@@ -158,6 +158,7 @@ function pluggable(){
 			return self.hash_string( function_to_add );
 		}*/
 		var randLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+		Date.now = Date.now || function() { return +new Date; }; //ie8 fix
 		return uniqid = randLetter + Date.now();
 	};
 	
