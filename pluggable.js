@@ -4,9 +4,9 @@
  * 		the above calls all of the functions linked to the hook and returns the parsed variable value resulting from the functions.
  *  To add a modifier/plugin simply call: plug.add_filter( 'hook_name', function_to_call, 10, 2 );
  * 		This will call the function 'function_to_call' when the apply_filters funciton with the same hook is called.
- * 
+ *
  * 	For more inforation on how this works see the wordpress implementation of hooks (this is essentially just a javascript port of that)
- * 
+ *
  * 	Author: Peter Wells - 2013
  */
 function pluggable(){
@@ -19,7 +19,7 @@ function pluggable(){
 	/* Just like Wordpress */
 	/**
 	 * calls all of the functions linked to the hook and returns the parsed variable value resulting from the functions.
-	 * 
+	 *
 	 * @param string tag The name of the hook
 	 * @param string|function function_to_add The function to call
 	 * @param number priority Optional. The priority of the call (lower means function is called sooner)
@@ -52,10 +52,10 @@ function pluggable(){
 	
 	/**
 	 * Add a modifier / plugin to a hook
-	 * 
+	 *
 	 * @param string tag The name of the hook
 	 * @param string|function value The original value to be parsed
-	 * @param array|object extra Optional. 
+	 * @param array|object extra Optional.
 	 * @return Output of the functions that were hooked into the filter tag - usually modified versions of the 'value' input
 	 */
 	self.apply_filters = function( tag, value, extra ){
@@ -89,41 +89,47 @@ function pluggable(){
 			self.merged_filters[ tag ] = true;
 		}
 		//console.log(self.filters[ tag ]);
-		$.each( self.filters[ tag ], function(i, val){
-			$.each( val, function( j, the_ ){
-				var temp_value = null;
-				if ( typeof the_['function'] != 'undefined' ){
-					if( self.logging ) console.log('CALLING FUNCTION `'+String(the_['function']).substring(0,40)+'` to hook `'+tag+'`');
-					if( typeof the_['function'] == 'function' ){
-						//console.log(the_['function']);
-						temp_value = the_['function']( value, args ); //execute function
-					} else {
-						if( the_['function'] ){
-							//console.log(the_['function']);
-							if( /\./g.test(the_['function']) ){
-								var splits = the_['function'].split(".");
-								if( splits.length == 2 ){
-									temp_value = window[ splits[0] ][ splits[1] ]( value, args ); //execute function
-								} else {
-									if( self.logging ) console.warn('WARNING: filter function `'+ the_['function'] +'` can only be at most 2 levels! ( eg: user.login NOT user.actions.login )');
-								}
+		for (var i in self.filters[ tag ]) {
+			if (self.filters[ tag ].hasOwnProperty(i)) {
+				var val = self.filters[ tag ][i];
+				for (var j in val) {
+					if (val.hasOwnProperty(j)) {
+						var the_ = val[j];
+						var temp_value = null;
+						if ( typeof the_['function'] != 'undefined' ){
+							if( self.logging ) console.log('CALLING FUNCTION `'+String(the_['function']).substring(0,40)+'` to hook `'+tag+'`');
+							if( typeof the_['function'] == 'function' ){
+								//console.log(the_['function']);
+								temp_value = the_['function']( value, args ); //execute function
 							} else {
-								if( typeof window[ the_['function'] ] === "function" ){
-									//var tmpFunc = new Function( the_['function'] ); //turn string into function
-									temp_value = window[ the_['function'] ]( value, args ); //execute function
-									//value = call_user_func_array(the_['function'], array_slice(args, 1, (int) the_['accepted_args']));
-								} else {
-									if( self.logging ) console.warn('WARNING: filter function `'+ the_['function'] +'` does not exist!');
+								if( the_['function'] ){
+									//console.log(the_['function']);
+									if( /\./g.test(the_['function']) ){
+										var splits = the_['function'].split(".");
+										if( splits.length == 2 ){
+											temp_value = window[ splits[0] ][ splits[1] ]( value, args ); //execute function
+										} else {
+											if( self.logging ) console.warn('WARNING: filter function `'+ the_['function'] +'` can only be at most 2 levels! ( eg: user.login NOT user.actions.login )');
+										}
+									} else {
+										if( typeof window[ the_['function'] ] === "function" ){
+											//var tmpFunc = new Function( the_['function'] ); //turn string into function
+											temp_value = window[ the_['function'] ]( value, args ); //execute function
+											//value = call_user_func_array(the_['function'], array_slice(args, 1, (int) the_['accepted_args']));
+										} else {
+											if( self.logging ) console.warn('WARNING: filter function `'+ the_['function'] +'` does not exist!');
+										}
+									}
 								}
 							}
 						}
+						if( temp_value != null ){
+							value = temp_value;
+						}
 					}
 				}
-				if( temp_value != null ){
-					value = temp_value;
-				}
-			} );
-		});
+			}
+		}
 		
 		self.current_filter.pop();
 	
@@ -137,7 +143,7 @@ function pluggable(){
 		//global self.filters;
 	
 		/*self.filters['all'];
-		$.each( self.filters['all'], function( i, the ){
+		jQuery.each( self.filters['all'], function( i, the ){
 			
 		} );
 		do {
